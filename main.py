@@ -7,7 +7,7 @@ import pickle
 import redis
 
 app = Flask(__name__)
-r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ",ssl=True)
+r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
 
 @app.route('/')
 def index():
@@ -22,18 +22,17 @@ def display():
 def upload_csv():
     return render_template('upload.html')
 
-@app.route('/list',methods=['GET','POST'])
+@app.route('/list')
 def list():
     cache = "mycache"
     start_t = time.time()
     query = "select * from Earthquake"
-    if r.exists(cache):
+    if r.get(cache):
         t = "with"
         print(t)
         isCache = 'with Cache'
 
         rows = pickle.loads(r.get(cache))
-        end_t = time.time() - start_t
         r.delete(cache)
 
     else:
@@ -45,8 +44,10 @@ def list():
         rows = cur.fetchall();
         con.close()
         r.set(cache, pickle.dumps(rows))
-        end_t = time.time() - start_t
-    return render_template("table.html", rows=rows)
+    end_t = time.time()
+    diff=end_t-start_t
+    print(end_t)
+    return render_template("table.html", rows=rows, stime=start_t, diff=diff)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
