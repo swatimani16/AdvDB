@@ -8,9 +8,24 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/display')
+def display():
+    return render_template('display.html')
+
 @app.route('/enternew')
 def upload_csv():
     return render_template('upload.html')
+
+@app.route('/list',methods=['GET','POST'])
+def list():
+    con = sql.connect("database.db")
+
+    cur = con.cursor()
+    cur.execute("select * from Earthquake")
+
+    rows = cur.fetchall()
+    con.close()
+    return render_template("table.html", rows=rows)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
