@@ -44,10 +44,9 @@ def list():
         rows = cur.fetchall();
         con.close()
         r.set(cache, pickle.dumps(rows))
-    end_t = time.time()
-    diff=end_t-start_t
+    end_t = time.time() - start_t
     print(end_t)
-    return render_template("table.html", rows=rows, stime=start_t, diff=diff)
+    return render_template("table.html", rows=rows, stime=end_t)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
