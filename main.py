@@ -41,12 +41,12 @@ def list():
         con = sql.connect("database.db")
         cur = con.cursor()
         cur.execute(query)
-        rows = cur.fetchall();
+        rows = cur.fetchall()
         con.close()
         r.set(cache, pickle.dumps(rows))
     end_t = time.time() - start_t
     print(end_t)
-    return render_template("table.html", rows=rows, stime=end_t)
+    return render_template("table.html", rows=t, stime=end_t)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
