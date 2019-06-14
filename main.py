@@ -2,10 +2,16 @@
 from flask import Flask, render_template, request
 import sqlite3 as sql
 import pandas as pd
+import time
+import pickle
+import redis
+
 app = Flask(__name__)
+r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ",ssl=True)
 
 @app.route('/')
 def index():
+    r.set("swathi",1)
     return render_template('index.html')
 
 @app.route('/display')
@@ -18,13 +24,28 @@ def upload_csv():
 
 @app.route('/list',methods=['GET','POST'])
 def list():
-    con = sql.connect("database.db")
+    cache = "mycache"
+    start_t = time.time()
+    query = "select * from Earthquake"
+    if r.exists(cache):
+        t = "with"
+        print(t)
+        isCache = 'with Cache'
 
-    cur = con.cursor()
-    cur.execute("select * from Earthquake")
+        rows = pickle.loads(r.get(cache))
+        end_t = time.time() - start_t
+        r.delete(cache)
 
-    rows = cur.fetchall()
-    con.close()
+    else:
+        t = "without"
+        print(t)
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall();
+        con.close()
+        r.set(cache, pickle.dumps(rows))
+        end_t = time.time() - start_t
     return render_template("table.html", rows=rows)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
