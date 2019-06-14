@@ -5,6 +5,7 @@ import pandas as pd
 import time
 import pickle
 import redis
+import random
 
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
@@ -47,6 +48,34 @@ def list():
     end_t = time.time() - start_t
     print(end_t)
     return render_template("table.html", rows=t, stime=end_t)
+
+@app.route('/select')
+def select():
+    for i in range(100):
+        cache = "mycache"
+        start_t = time.time()
+        var=str(random.uniform(2, 5))
+        query = "select * from Earthquake where mag > " +var
+        if r.get(cache+str(i)):
+            t = "with"
+            print(t)
+            isCache = 'with Cache'
+
+            rows = pickle.loads(r.get(cache+str(i)))
+            #r.delete(cache)
+
+        else:
+            t = "without"
+            print(t)
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchall()
+            con.close()
+            r.set(cache+str(i), pickle.dumps(rows))
+        end_t = time.time() - start_t
+        print(end_t)
+        return render_template("table.html", rows=t, stime=end_t)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
