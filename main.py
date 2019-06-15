@@ -23,6 +23,10 @@ def display():
 def upload_csv():
     return render_template('upload.html')
 
+@app.route('/formfill')
+def formfill():
+    return render_template('formfill.html')
+
 @app.route('/list')
 def list():
     cache = "mycache"
@@ -54,14 +58,14 @@ def select():
     for i in range(100):
         cache = "mycache"
         start_t = time.time()
-        var=str(random.uniform(2, 5))
+        var=str(round(random.uniform(2, 5)))
         query = "select * from Earthquake where mag > " +var
-        if r.get(cache+str(i)):
+        if r.get(cache+var):
             t = "with"
             print(t)
             isCache = 'with Cache'
 
-            rows = pickle.loads(r.get(cache+str(i)))
+            rows = pickle.loads(r.get(cache+var))
             #r.delete(cache)
 
         else:
@@ -72,9 +76,43 @@ def select():
             cur.execute(query)
             rows = cur.fetchall()
             con.close()
-            r.set(cache+str(i), pickle.dumps(rows))
+            r.set(cache+var, pickle.dumps(rows))
         end_t = time.time() - start_t
         print(end_t)
+        return render_template("table.html", rows=t, stime=end_t)
+
+
+@app.route('/select_lat',methods=['GET', 'POST'])
+def select_lat():
+    #for i in range(100):
+        cache = "mycache"
+        start_t = time.time()
+        if request.method =='POST':
+            lat=request.form['lat1']
+            lon=request.form['lon1']
+            dist = request.form['dis']
+            #var=str(random.uniform(2, 5))
+            #query = "select * from Earthquake where lat < "+lat1+ and lat >+lat2
+            query='SELECT * FROM (select *,(((acos(sin((' + lat + '*3.14/180)) * sin(("latitude"*3.14/180))+cos((' + lat + '*3.14/180))*cos(("latitude"*3.14/180))*cos(((' + lon + ' - "longitude")*3.14/180))))*180/3.14)*60*1.1515*1.609344) as distance from KDJ50223.EARTHQUAKE ) where distance <= ' + dist + ''
+            if r.get(cache):
+                t = "with"
+                print(t)
+                isCache = 'with Cache'
+
+                rows = pickle.loads(r.get(cache))
+                #r.delete(cache)
+
+            else:
+                t = "without"
+                print(t)
+                con = sql.connect("database.db")
+                cur = con.cursor()
+                cur.execute(query)
+                rows = cur.fetchall()
+                con.close()
+                r.set(cache, pickle.dumps(rows))
+            end_t = time.time() - start_t
+            print(end_t)
         return render_template("table.html", rows=t, stime=end_t)
 
 @app.route('/addrec',methods = ['POST', 'GET'])
