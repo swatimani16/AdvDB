@@ -82,7 +82,7 @@ def select():
         return render_template("table.html", rows=t, stime=end_t)
 
 
-@app.route('/select_lat',methods=['GET', 'POST'])
+@app.route('/select_lat', methods=['GET', 'POST'])
 def select_lat():
     #for i in range(100):
         cache = "mycache"
@@ -117,13 +117,67 @@ def select_lat():
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
+   s_time=time.time()
    if request.method == 'POST':
        con = sql.connect("database.db")
        csv = request.files['myfile']
        file = pd.read_csv(csv)
        file.to_sql('Earthquake', con, schema=None, if_exists='replace', index=True, index_label=None, chunksize=None, dtype=None)
        con.close()
-       return render_template("result.html",msg = "Record inserted successfully")
+       e_time=time.time()-s_time
+       return render_template("result.html",msg = "Record inserted successfully", time=e_time)
+
+@app.route('/append_To_string',methods=['GET','POST'])
+def append_To_string():
+    query='select id from Earthquake where id LIKE "O%"'
+    con = sql.connect("database.db")
+    cur = con.cursor()
+    cur.execute(query)
+    rows = cur.fetchall()
+    s_time=time.time()
+    val=random.randint(0,len(rows)-1)
+    var=str(rows[val])
+    query1="select * from earthquake where id ='"+var[2:12]+"'"
+    con = sql.connect("database.db")
+    cur = con.cursor()
+    cur.execute(query1)
+    rows1 = cur.fetchall()
+    e_time=time.time()-s_time
+    return render_template("result.html", msg=e_time)
+
+@app.route('/append_cache',methods=['GET','POST'])
+def append_cache():
+        query = 'select id from Earthquake where id LIKE "O%"'
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        for i in range(100):
+            cache = "mycache"
+            start_t = time.time()
+            val = random.randint(0, len(rows) - 1)
+            var = str(rows[val])
+            query1 = "select * from earthquake where id ='"+var[2:12]+"'"
+            if r.get(cache+var):
+                t = "with"
+                print(t)
+                isCache = 'with Cache'
+
+                rows = pickle.loads(r.get(cache+var))
+                #r.delete(cache)
+
+            else:
+                t = "without"
+                print(t)
+                con = sql.connect("database.db")
+                cur = con.cursor()
+                cur.execute(query1)
+                rows1 = cur.fetchall()
+                con.close()
+                r.set(cache+var, pickle.dumps(rows))
+            end_t = time.time() - start_t
+            print(end_t)
+        return render_template("table.html", rows=t, stime=end_t)
 
 if __name__ == '__main__':
   app.run()
