@@ -152,9 +152,9 @@ def append_cache():
         cur = con.cursor()
         cur.execute(query)
         rows = cur.fetchall()
+        start_t = time.time()
         for i in range(100):
             cache = "mycache"
-            start_t = time.time()
             val = random.randint(0, len(rows) - 1)
             var = str(rows[val])
             query1 = "select * from earthquake where id ='"+var[2:12]+"'"
@@ -175,8 +175,8 @@ def append_cache():
                 rows1 = cur.fetchall()
                 con.close()
                 r.set(cache+var, pickle.dumps(rows))
-            end_t = time.time() - start_t
-            print(end_t)
+        end_t = time.time() - start_t
+        print(end_t)
         return render_template("table.html", rows=t, stime=end_t)
 
 if __name__ == '__main__':
