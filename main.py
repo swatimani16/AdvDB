@@ -207,7 +207,7 @@ def cluster():
     return render_template('table.html', data=rows)
 
 
-@app.route('/cluster_plot')
+@app.route('/cluster_plot',methods=['GET','POST'])
 def cluster_plot():
     query = "SELECT latitude,longitude FROM Earthquake "
     con = sql.connect("database.db")
