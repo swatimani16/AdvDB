@@ -219,12 +219,15 @@ def cluster_plot():
     X = y.dropna()
     print(X[0])
     fig = plt.figure()
-
+    centers = k.cluster_centers_
+    plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
     plt.scatter(X[0], X[1])
     # print(X[:,0])
     plt.show()
     fig.savefig('static/img.png')
     # print(k.cluster_centers_)
     return render_template("clus_o.html", data=rows)
+
+
 if __name__ == '__main__':
   app.run()
