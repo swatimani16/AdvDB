@@ -6,6 +6,9 @@ import time
 import pickle
 import redis
 import random
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
 
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
@@ -14,6 +17,9 @@ r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,passw
 def index():
     r.set("swathi",1)
     return render_template('index.html')
+@app.route('/clustering')
+def clustering():
+    return render_template('clustering.html')
 
 @app.route('/display')
 def display():
@@ -179,5 +185,46 @@ def append_cache():
         print(end_t)
         return render_template("table.html", rows=t, stime=end_t)
 
+@app.route('/cluster',methods=['GET','POST'])
+def cluster():
+    rows = []
+    l=[]
+    if request.method=="POST":
+        value=int(request.form['c'])
+        query = "SELECT mag FROM EARTHQUAKE"
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        y = pd.DataFrame(rows)
+        X = y.dropna().to_numpy()
+        k = KMeans(n_clusters=value, random_state=0).fit(X)
+
+        l.append(k.cluster_centers_)
+        print(l[0][0])
+        print(rows)
+
+    return render_template('table.html', data=rows)
+
+
+@app.route('/cluster_plot')
+def cluster_plot():
+    query = "SELECT latitude,longitude FROM Earthquake "
+    con = sql.connect("database.db")
+    cur = con.cursor()
+    cur.execute(query)
+    rows = cur.fetchall()
+    y = pd.DataFrame(rows)
+    k = KMeans(n_clusters=5, random_state=0).fit(y)
+    X = y.dropna()
+    print(X[0])
+    fig = plt.figure()
+
+    plt.scatter(X[0], X[1])
+    # print(X[:,0])
+    plt.show()
+    fig.savefig('static/img.png')
+    # print(k.cluster_centers_)
+    return render_template("clus_o.html", data=rows)
 if __name__ == '__main__':
   app.run()
