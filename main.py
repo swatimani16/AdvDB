@@ -24,6 +24,11 @@ def index():
 def clustering():
     return render_template('clustering.html')
 
+#Clustering
+@app.route('/formadd')
+def formadd():
+    return render_template('formadd.html')
+
 #locationSource
 @app.route('/location')
 def location():
@@ -95,32 +100,34 @@ def list():
 @app.route('/select',methods=['GET','POST'])
 def select():
     if request.method=='POST':
-        loop=int(request.form['loop'])
-        for i in range(loop):
-            cache = "mycache"
-            start_t = time.time()
-            var=str(round(random.uniform(2, 5)))
-            query = "select * from Earthquake where mag > " +var
-            if r.get(cache+var):
-                t = "With Cache"
-                print(t)
-                isCache = 'with Cache'
+        d1=float(request.form['d1'])
+        d2=float(request.form['d2'])
+        lon=float(request.form['lon1'])
+        #for i in range():
+        cache = "mycache"
+        start_t = time.time()
+        #var=str(round(random.uniform(2, 5)))
+        query = "select time,latitude,longitude,depthError from Earthquake where depthError >="+str(d1)+" and depthError<="+str(d2)+" and longitude>"+str(lon)+""
+        if r.get(cache):
+            t = "With Cache"
+            print(t)
+            isCache = 'with Cache'
 
-                rows = pickle.loads(r.get(cache+var))
-                #r.delete(cache)
-                end_t = time.time() - start_t
-            else:
-                t = "Without Cache"
-                print(t)
-                con = sql.connect("database.db")
-                cur = con.cursor()
-                cur.execute(query)
-                end_t = time.time() - start_t
-                rows = cur.fetchall()
-                con.close()
-                r.set(cache+var, pickle.dumps(rows))
-            #end_t = time.time() - start_t
-            print(end_t)
+            rows = pickle.loads(r.get(cache))
+            #r.delete(cache)
+            end_t = time.time() - start_t
+        else:
+            t = "Without Cache"
+            print(t)
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            end_t = time.time() - start_t
+            rows = cur.fetchall()
+            con.close()
+            r.set(cache, pickle.dumps(rows))
+        #end_t = time.time() - start_t
+        print(end_t)
     return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
 
@@ -324,20 +331,21 @@ def select_lat():
             return render_template("table_display.html",data=rows,rows=t, stime=e_time)
 
 #between two magnitudes
+#between two magnitudes
 @app.route("/between",methods=['GET','POST'])
 def between():
     if request.method=='POST':
         mag1=float(request.form['mag1'])
         mag2=float(request.form['mag2'])
+        start_t = time.time()
         for i in range(100):
             cache = "mycache"
-            start_t = time.time()
+
             query = "select * from Earthquake where mag between "+str(mag1)+" and "+str(mag2)+""
             if r.get(cache):
                 t = "With Cache"
                 print(t)
                 isCache = 'with Cache'
-
                 rows = pickle.loads(r.get(cache))
                 #r.delete(cache)
                 end_t = time.time() - start_t
@@ -351,9 +359,11 @@ def between():
                 rows = cur.fetchall()
                 con.close()
                 r.set(cache, pickle.dumps(rows))
-            #end_t = time.time() - start_t
+        # end_t = time.time() - start_t
+
             print(end_t)
             return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+
 
 
 #Select between two mags and 2 dates
@@ -402,31 +412,41 @@ def delete():
 def loc():
     if request.method=='POST':
         location=(request.form['loc'])
-        for i in range(100):
-            cache = "mycache"
-            start_t = time.time()
-            query = "select * from earthquake where locationSource ='" + location + "'"
-            if r.get(cache):
-                t = "With Cache"
-                print(t)
-                isCache = 'with Cache'
+        cache = "mycache"
+        fromCache = request.form['cache']
 
-                rows = pickle.loads(r.get(cache))
-                #r.delete(cache)
-                end_t = time.time() - start_t
-            else:
-                t = "Without Cache"
-                print(t)
-                con = sql.connect("database.db")
-                cur = con.cursor()
-                cur.execute(query)
-                end_t = time.time() - start_t
-                rows = cur.fetchall()
-                con.close()
-                r.set(cache, pickle.dumps(rows))
-            #end_t = time.time() - start_t
+        if (fromCache == "Cache"):
+            t="with cache"
+            rows, end_t = fromcache(cache, 100)
+        else:
+            t="without cache"
+            query = "select * from earthquake where locationSource ='" + location + "'"
+            rows, end_t = fromdb(query, 100, cache)
             print(end_t)
-    return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+        return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+
+
+def fromcache(cache, loop):
+    start_t = time.time()
+    for i in range(loop):
+        print(i)
+        rows = (r.get(cache))
+        end_t = time.time() - start_t
+    return  pickle.loads(rows), end_t
+
+
+def fromdb(query, loop, cache):
+    start_t = time.time()
+    con = sql.connect("database.db")
+    cur = con.cursor()
+    for i in range(loop):
+        print(i)
+        cur.execute(query)
+        rows = cur.fetchall()
+    end_t = time.time() - start_t
+    r.set(cache, pickle.dumps(rows))
+    con.close()
+    return rows, end_t
 
 
 if __name__ == '__main__':
