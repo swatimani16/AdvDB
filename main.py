@@ -8,8 +8,8 @@ import redis
 import random
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
-
-
+import math
+from math import sqrt
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
 
@@ -88,18 +88,19 @@ def select():
         return render_template("table.html", rows=t, stime=end_t)
 
 
-@app.route('/select_lat', methods=['GET', 'POST'])
+'''@app.route('/select_lat', methods=['GET', 'POST'])
 def select_lat():
     #for i in range(100):
         cache = "mycache"
         start_t = time.time()
         if request.method =='POST':
-            lat=request.form['lat1']
-            lon=request.form['lon1']
+            lat=float(request.form['lat1'])
+            lon=float(request.form['lon1'])
             dist = request.form['dis']
             #var=str(random.uniform(2, 5))
             #query = "select * from Earthquake where lat < "+lat1+ and lat >+lat2
-            query='SELECT * FROM (select *,(((acos(sin((' + lat + '*3.14/180)) * sin(("latitude"*3.14/180))+cos((' + lat + '*3.14/180))*cos(("latitude"*3.14/180))*cos(((' + lon + ' - "longitude")*3.14/180))))*180/3.14)*60*1.1515*1.609344) as distance from KDJ50223.EARTHQUAKE ) where distance <= ' + dist + ''
+            a=str((((math.acos(math.sin((lat *3.14/180)) * math.sin(("latitude"*3.14/180))+math.cos((lat *3.14/180))*math.cos(("latitude"*3.14/180))*math.cos(((lon - "longitude")*3.14/180))))*180/3.14)*60*1.1515*1.609344))
+            query='SELECT * FROM (select *,'+a+' as distance from Earthquake ) where distance <= ' + dist + ''
             if r.get(cache):
                 t = "with"
                 print(t)
@@ -119,7 +120,7 @@ def select_lat():
                 r.set(cache, pickle.dumps(rows))
             end_t = time.time() - start_t
             print(end_t)
-        return render_template("table.html", rows=t, stime=end_t)
+            return render_template("table.html",rows=t, stime=end_t)'''
 
 @app.route('/addrec',methods = ['POST', 'GET'])
 def addrec():
@@ -227,6 +228,60 @@ def cluster_plot():
     fig.savefig('static/img.png')
     # print(k.cluster_centers_)
     return render_template("clus_o.html", data=rows)
+
+
+@app.route('/select_lat', methods=['GET', 'POST'])
+def select_lat():
+    res = []
+    rows = []
+    magnitudes=[]
+    for i in range(100):
+        cache = "mycache"
+        start_t = time.time()
+        query = "select * from Earthquake"
+        radius = 6373.0
+        if r.get(cache):
+            t = "with"
+            print(t)
+            isCache = 'with Cache'
+
+            rows = pickle.loads(r.get(cache))
+            # r.delete(cache)
+
+        else:
+            t = "without"
+            print(t)
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchall()
+            s_time = time.time()
+            for rows1 in rows:
+                if request.method == 'POST':
+                    lat1 = math.radians(float(rows1[2]))
+                    lon1 = math.radians(float(rows1[3]))
+                    dist_lat = lat1 - math.radians(float(request.form['lat1']))
+                    dist_lon = lon1 - math.radians(float(request.form['lon1']))
+                    c = math.sin(dist_lon / 2) * 2
+                    formula = math.sin(dist_lat / 2) * 2 + math.cos(math.radians(float(request.form['lat1']))) * math.cos(
+                        lat1) * c
+                    # print(formula)
+                    ans = 2 * (math.atan2(sqrt(abs(formula)), 1 - sqrt(abs(formula))))
+                    distance = float(radius * ans)
+
+                    # print(distance)
+                    if distance <= (float(request.form['dis'])):
+                        # if rows not in res:
+                        res.append((rows1[2], rows1[3]))
+            con.close()
+            r.set(cache, pickle.dumps(res))
+        e_time = time.time() - start_t
+        print(e_time)
+        return render_template("table.html",rows=t, stime=e_time)
+
+
+
+
 
 
 if __name__ == '__main__':
