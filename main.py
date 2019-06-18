@@ -181,7 +181,7 @@ def append_To_string():
     cur.execute(query1)
     rows1 = cur.fetchall()
     e_time=time.time()-s_time
-    return render_template("result.html", msg=e_time)
+    return render_template("table_display.html",data=rows, stime=e_time)
 
 #Display according to starting letter and select id accordingly with cache
 @app.route('/append_cache',methods=['GET','POST'])
