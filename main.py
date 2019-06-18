@@ -108,19 +108,20 @@ def select():
 
                 rows = pickle.loads(r.get(cache+var))
                 #r.delete(cache)
-
+                end_t = time.time() - start_t
             else:
                 t = "Without Cache"
                 print(t)
                 con = sql.connect("database.db")
                 cur = con.cursor()
                 cur.execute(query)
+                end_t = time.time() - start_t
                 rows = cur.fetchall()
                 con.close()
                 r.set(cache+var, pickle.dumps(rows))
-            end_t = time.time() - start_t
+            #end_t = time.time() - start_t
             print(end_t)
-            return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+    return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
 
 '''@app.route('/select_lat', methods=['GET', 'POST'])
@@ -198,8 +199,8 @@ def append_cache():
         cur = con.cursor()
         cur.execute(query)
         rows = cur.fetchall()
-        start_t = time.time()
         for i in range(100):
+            start_t = time.time()
             cache = "mycache"
             val = random.randint(0, len(rows) - 1)
             var = str(rows[val])
@@ -211,6 +212,7 @@ def append_cache():
 
                 rows = pickle.loads(r.get(cache+var))
                 #r.delete(cache)
+                end_t = time.time() - start_t
 
             else:
                 t = "Without Cache"
@@ -221,9 +223,9 @@ def append_cache():
                 rows1 = cur.fetchall()
                 con.close()
                 r.set(cache+var, pickle.dumps(rows))
-            end_t = time.time() - start_t
+                end_t = time.time() - start_t
             print(end_t)
-            return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+        return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
 
 #Clustering
@@ -290,7 +292,7 @@ def select_lat():
 
                 rows = pickle.loads(r.get(cache))
                 # r.delete(cache)
-
+                end_t = time.time() - start_t
             else:
                 t = "Without Cache"
                 print(t)
@@ -338,17 +340,18 @@ def between():
 
                 rows = pickle.loads(r.get(cache))
                 #r.delete(cache)
-
+                end_t = time.time() - start_t
             else:
                 t = "Without Cache"
                 print(t)
                 con = sql.connect("database.db")
                 cur = con.cursor()
                 cur.execute(query)
+                end_t = time.time() - start_t
                 rows = cur.fetchall()
                 con.close()
                 r.set(cache, pickle.dumps(rows))
-            end_t = time.time() - start_t
+            #end_t = time.time() - start_t
             print(end_t)
             return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
@@ -372,18 +375,19 @@ def between_dates():
 
                 rows = pickle.loads(r.get(cache))
                 #r.delete(cache)
-
+                end_t = time.time() - start_t
             else:
                 t = "Without Cache"
                 print(t)
                 con = sql.connect("database.db")
                 cur = con.cursor()
                 cur.execute(query)
+                end_t = time.time() - start_t
                 rows = cur.fetchall()
                 con.close()
                 r.set(cache, pickle.dumps(rows))
             print(rows)
-            end_t = time.time() - start_t
+            #end_t = time.time() - start_t
             print(end_t)
             return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
@@ -409,19 +413,20 @@ def loc():
 
                 rows = pickle.loads(r.get(cache))
                 #r.delete(cache)
-
+                end_t = time.time() - start_t
             else:
                 t = "Without Cache"
                 print(t)
                 con = sql.connect("database.db")
                 cur = con.cursor()
                 cur.execute(query)
+                end_t = time.time() - start_t
                 rows = cur.fetchall()
                 con.close()
                 r.set(cache, pickle.dumps(rows))
-            end_t = time.time() - start_t
+            #end_t = time.time() - start_t
             print(end_t)
-            return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+    return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
 
 if __name__ == '__main__':
