@@ -188,26 +188,15 @@ def append_To_string():
         loop=int(request.form['loop'])
         s_time = time.time()
         for i in range(loop):
-            query = "select depthError from Earthquake where depthError >=" + str(d1) + " and depthError<=" + str(d2) + ""
-            con = sql.connect("database.db")
-            cur = con.cursor()
-            cur.execute(query)
-            rows = cur.fetchall()
-
-            var=[]
-            var1=[]
-            val=random.randint(0,len(rows)-1)
-            val1 = random.randint(0, len(rows) - 1)
-            var.append(rows[val])
-            var1.append(rows[val1])
-            print(var)
-            print(var1)
-            query1="select depthError from Earthquake where depthError >='"+str(var[3:6])+"' and depthError <='"+str(var1[3:5])+"'"
+            val=random.uniform(d1,d2)
+            val1 = random.uniform(d1, d2)
+            query1="select count(*) from Earthquake where depthError >="+str(val)+" and depthError <='"+str(val1)+"'"
             con = sql.connect("database.db")
             cur = con.cursor()
             cur.execute(query1)
             rows1 = cur.fetchall()
         e_time=time.time()-s_time
+        #print(rows1)
         return render_template("table_display.html",data=rows1, stime=e_time)
 
 #Display according to starting letter and select id accordingly with cache
