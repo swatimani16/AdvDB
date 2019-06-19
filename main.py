@@ -117,7 +117,7 @@ def list():
     end_t = time.time() - start_t
     print(end_t)
     return render_template("table_display.html",data=rows, rows=t, stime=end_t)
-
+########################################################################################################################
 #Display all the values greater than value and take value of loop from the user
 @app.route('/select',methods=['GET','POST'])
 def select():
@@ -152,7 +152,7 @@ def select():
         print(end_t)
     return render_template("table_display.html",data=rows, rows=t, stime=end_t)
 
-
+########################################################################################################################
 '''@app.route('/select_lat', methods=['GET', 'POST'])
 def select_lat():
     #for i in range(100):
@@ -200,7 +200,7 @@ def addrec():
        e_time=time.time()-s_time
        return render_template("result.html",msg = "Record inserted successfully", time=e_time)
 
-
+########################################################################################################################
 #Display according to starting letter and select id accordingly
 @app.route('/append_To_string',methods=['GET','POST'])
 def append_To_string():
@@ -270,7 +270,7 @@ def append_cache():
             print(end_t)
         return render_template("table_display.html",data=res, rows=t, stime=etime)
 
-
+########################################################################################################################
 #Clustering
 @app.route('/cluster',methods=['GET','POST'])
 def cluster():
@@ -293,38 +293,6 @@ def cluster():
 
     return render_template('table.html', data=rows)
 
-
-def convert_fig_to_html(fig):
-	from io import BytesIO
-	figfile = BytesIO()
-	plt.savefig(figfile, format='png')
-	figfile.seek(0)  # rewind to beginning of file
-	import base64
-	#figdata_png = base64.b64encode(figfile.read())
-	figdata_png = base64.b64encode(figfile.getvalue())
-	return figdata_png
-
-
-#Cluster making Plotting
-@app.route('/cluster_plot',methods=['GET','POST'])
-def cluster_plot():
-    if request.method=='POST':
-        clus=int(request.form['c'])
-        query = "SELECT latitude,longitude FROM Earthquake "
-        con = sql.connect("database.db")
-        cur = con.cursor()
-        cur.execute(query)
-        rows = cur.fetchall()
-        y = pd.DataFrame(rows)
-        k = KMeans(n_clusters=clus, random_state=0).fit(y)
-        X = y.dropna()
-        fig = plt.figure()
-        centers = k.cluster_centers_
-        plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
-        plt.scatter(X[0], X[1])
-        # print(X[:,0])
-        plot = convert_fig_to_html(fig)
-        return render_template("clus_o.html", data=plot.decode('utf8'))
 
 #Select between lat and lon and distance
 @app.route('/select_lat', methods=['GET', 'POST'])
@@ -377,7 +345,6 @@ def select_lat():
             print(e_time)
             return render_template("table_display.html",data=rows,rows=t, stime=e_time)
 
-#between two magnitudes
 #between two magnitudes
 @app.route("/between",methods=['GET','POST'])
 def between():
@@ -495,12 +462,44 @@ def fromdb(query, loop, cache):
     con.close()
     return rows, end_t
 
+########################################################################################################################
+########################################################################################################################
+def convert_fig_to_html(fig):
+	from io import BytesIO
+	figfile = BytesIO()
+	plt.savefig(figfile, format='png')
+	figfile.seek(0)  # rewind to beginning of file
+	import base64
+	#figdata_png = base64.b64encode(figfile.read())
+	figdata_png = base64.b64encode(figfile.getvalue())
+	return figdata_png
+
+
+#Cluster making Plotting
+@app.route('/cluster_plot',methods=['GET','POST'])
+def cluster_plot():
+    if request.method=='POST':
+        clus=int(request.form['c'])
+        query = "SELECT latitude,longitude FROM Earthquake "
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        y = pd.DataFrame(rows)
+        k = KMeans(n_clusters=clus, random_state=0).fit(y)
+        X = y.dropna()
+        fig = plt.figure()
+        centers = k.cluster_centers_
+        plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
+        plt.scatter(X[0], X[1])
+        # print(X[:,0])
+        plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
 
 @app.route("/plot_bar",methods=['GET','POST'])
 def plot_bar():
     mlist=[]
     if request.method=='POST':
-        loop=int(request.form['loop'])
         d1 = int(request.form['d1'])
         d2 = int(request.form['d2'])
         for i in range(d1,d2,2):
