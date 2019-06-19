@@ -33,7 +33,10 @@
 
     </tr>
     {%endfor%}-->
-    <table border="1"><tr><td>{{data}}</td></tr></table>
+    {% for r in data%}
+    {{r}}
+    {%endfor%}
+    <table border="1"><tr><td>{{data1}}</td></tr></table>
 
 </table>
 <table border="1">

@@ -25,9 +25,31 @@ def clustering():
     return render_template('clustering.html')
 
 #Clustering
+@app.route('/barplot')
+def barplot():
+    return render_template('barplot.html')
+
+#Clustering
+@app.route('/pieplot')
+def pieplot():
+    return render_template('pieplot.html')
+
+
+@app.route('/plothist')
+def plothist():
+    return render_template('plothist.html')
+
+
+#Clustering
 @app.route('/formadd')
 def formadd():
     return render_template('formadd.html')
+
+
+@app.route('/formenter')
+def formenter():
+    return render_template('formenter.html')
+
 
 #locationSource
 @app.route('/location')
@@ -182,6 +204,8 @@ def addrec():
 #Display according to starting letter and select id accordingly
 @app.route('/append_To_string',methods=['GET','POST'])
 def append_To_string():
+    res=[]
+    etime=[]
     if request.method=='POST':
         d1=float(request.form['d1'])
         d2=float(request.form['d2'])
@@ -195,45 +219,56 @@ def append_To_string():
             cur = con.cursor()
             cur.execute(query1)
             rows1 = cur.fetchall()
-        e_time=time.time()-s_time
+            print(rows1)
+            res.append(rows1)
+            e_time=time.time()-s_time
+            etime.append(e_time)
         #print(rows1)
-        return render_template("table_display.html",data=rows1, stime=e_time)
+        return render_template("table_display.html",data=res, stime=etime)
 
 #Display according to starting letter and select id accordingly with cache
 @app.route('/append_cache',methods=['GET','POST'])
 def append_cache():
-        query = 'select id from Earthquake where id LIKE "O%"'
-        con = sql.connect("database.db")
-        cur = con.cursor()
-        cur.execute(query)
-        rows = cur.fetchall()
-        for i in range(100):
-            start_t = time.time()
+    res = []
+    etime=[]
+    var2=[]
+    if request.method == 'POST':
+        d1 = float(request.form['d1'])
+        d2 = float(request.form['d2'])
+        loop = int(request.form['loop'])
+        for i in range(loop):
+            val = random.uniform(d1, d2)
+            var2.append(val)
+            val1 = random.uniform(d1, d2)
+            var2.append(val1)
+            start_t=time.time()
             cache = "mycache"
-            val = random.randint(0, len(rows) - 1)
-            var = str(rows[val])
-            query1 = "select * from earthquake where id ='"+var[2:12]+"'"
-            if r.get(cache+var):
+            if r.get(cache+str(i)):
+                s_t = time.time()
                 t = "With Cache"
                 print(t)
                 isCache = 'with Cache'
 
-                rows = pickle.loads(r.get(cache+var))
+                rows = pickle.loads(r.get(cache+str(i)))
                 #r.delete(cache)
-                end_t = time.time() - start_t
-
+                end_t = time.time() - s_t
+                etime.append(end_t)
             else:
+                query = "select count(*) from Earthquake where depthError >=" + str(val) + " and depthError <='" + str(val1) + "'"
                 t = "Without Cache"
                 print(t)
                 con = sql.connect("database.db")
                 cur = con.cursor()
-                cur.execute(query1)
+                cur.execute(query)
                 rows1 = cur.fetchall()
-                con.close()
-                r.set(cache+var, pickle.dumps(rows))
+                #print(rows1)
+                res.append(rows1)
+                r.set(cache+str(i), pickle.dumps(rows1))
                 end_t = time.time() - start_t
+                etime.append(end_t)
+            print (res)
             print(end_t)
-        return render_template("table_display.html",data=rows, rows=t, stime=end_t)
+        return render_template("table_display.html",data=res, rows=t, stime=etime)
 
 
 #Clustering
@@ -258,27 +293,38 @@ def cluster():
 
     return render_template('table.html', data=rows)
 
+
+def convert_fig_to_html(fig):
+	from io import BytesIO
+	figfile = BytesIO()
+	plt.savefig(figfile, format='png')
+	figfile.seek(0)  # rewind to beginning of file
+	import base64
+	#figdata_png = base64.b64encode(figfile.read())
+	figdata_png = base64.b64encode(figfile.getvalue())
+	return figdata_png
+
+
 #Cluster making Plotting
 @app.route('/cluster_plot',methods=['GET','POST'])
 def cluster_plot():
-    query = "SELECT latitude,longitude FROM Earthquake "
-    con = sql.connect("database.db")
-    cur = con.cursor()
-    cur.execute(query)
-    rows = cur.fetchall()
-    y = pd.DataFrame(rows)
-    k = KMeans(n_clusters=5, random_state=0).fit(y)
-    X = y.dropna()
-    print(X[0])
-    fig = plt.figure()
-    centers = k.cluster_centers_
-    plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
-    plt.scatter(X[0], X[1])
-    # print(X[:,0])
-    plt.show()
-    fig.savefig('static/img.png')
-    # print(k.cluster_centers_)
-    return render_template("clus_o.html", data=rows)
+    if request.method=='POST':
+        clus=int(request.form['c'])
+        query = "SELECT latitude,longitude FROM Earthquake "
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        y = pd.DataFrame(rows)
+        k = KMeans(n_clusters=clus, random_state=0).fit(y)
+        X = y.dropna()
+        fig = plt.figure()
+        centers = k.cluster_centers_
+        plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
+        plt.scatter(X[0], X[1])
+        # print(X[:,0])
+        plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
 
 #Select between lat and lon and distance
 @app.route('/select_lat', methods=['GET', 'POST'])
@@ -448,6 +494,78 @@ def fromdb(query, loop, cache):
     r.set(cache, pickle.dumps(rows))
     con.close()
     return rows, end_t
+
+
+@app.route("/plot_bar",methods=['GET','POST'])
+def plot_bar():
+    mlist=[]
+    if request.method=='POST':
+        loop=int(request.form['loop'])
+        d1 = int(request.form['d1'])
+        d2 = int(request.form['d2'])
+        for i in range(d1,d2,2):
+            l = []
+            l1 = []
+            query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchall()
+            l=str(i)+"--"+str(i+2)
+            l1.append(l)
+            print(l1)
+            l1.append(rows[0])
+            print(l1)
+            mlist.append(l1)
+            y = pd.DataFrame(mlist)
+            print(y[0])
+            fig=plt.figure()
+            plt.bar(y[0],y[1])
+            plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
+
+@app.route("/plot_pie",methods=['GET','POST'])
+def plot_pie():
+    mlist=[]
+    if request.method=='POST':
+        d1 = int(request.form['d1'])
+        d2 = int(request.form['d2'])
+        for i in range(d1,d2,2):
+            l = []
+            l1 = []
+            query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchone()
+            l=str(i)+"--"+str(i+2)
+            l1.append(l)
+            print(l1)
+            l1.append(rows[0])
+            print(l1)
+            mlist.append(l1)
+            y = pd.DataFrame(mlist)
+            print(y[1])
+            fig=plt.figure()
+            plt.pie(y[1])
+            plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
+
+
+@app.route("/plot_histo",methods=['GET','POST'])
+def plot_histo():
+        query = "SELECT mag FROM Earthquake"
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        print(rows[0])
+        y = pd.DataFrame(rows)
+        print(y[0])
+        fig=plt.figure()
+        plt.hist(y[0],bins=5)
+        plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
 
 
 if __name__ == '__main__':
