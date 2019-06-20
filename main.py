@@ -490,8 +490,11 @@ def cluster_plot():
         X = y.dropna()
         fig = plt.figure()
         centers = k.cluster_centers_
-        plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
-        plt.scatter(X[0], X[1])
+        print(centers)
+        l=k.labels_
+        plt.scatter(X[0], X[1],c=l)
+        plt.scatter(centers[:, 0], centers[:, 1], c='red', s=200,marker='*', alpha=0.5)
+
         # print(X[:,0])
         plot = convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
