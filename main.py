@@ -10,6 +10,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import math
 from math import sqrt
+import seaborn as sns
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
 
@@ -509,18 +510,24 @@ def plot_bar():
             con = sql.connect("database.db")
             cur = con.cursor()
             cur.execute(query)
-            rows = cur.fetchall()
+            rows = cur.fetchone()
             l=str(i)+"--"+str(i+2)
             l1.append(l)
-            print(l1)
+            #print(l1)
             l1.append(rows[0])
-            print(l1)
+            #print(l1)
             mlist.append(l1)
-            y = pd.DataFrame(mlist)
-            print(y[0])
-            fig=plt.figure()
-            plt.bar(y[0],y[1])
-            plot = convert_fig_to_html(fig)
+        y = pd.DataFrame(mlist)
+        X=y.dropna()
+        print(X[1])
+        color=['red','blue','skyblue','yellow','cyan','magenta','black','green','gold','salmon','olive']
+        fig=plt.figure()
+        for i in range(len(X)):
+            plt.bar(X[0], X[1],label=X[0][i],color=color[i])
+        for i,v in enumerate(X[1]):
+            plt.text(i,v,str(v),color='blue',fontweight='bold',horizontalalignment='center')
+        plt.legend()
+        plot = convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
 
 @app.route("/plot_pie",methods=['GET','POST'])
@@ -532,6 +539,7 @@ def plot_pie():
         for i in range(d1,d2,2):
             l = []
             l1 = []
+            label=[]
             query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
             con = sql.connect("database.db")
             cur = con.cursor()
@@ -546,7 +554,8 @@ def plot_pie():
             y = pd.DataFrame(mlist)
             print(y[1])
             fig=plt.figure()
-            plt.pie(y[1])
+            plt.pie(y[1],autopct = '%1.1f%%',labels=y[0])
+            plt.legend()
             plot = convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
 
@@ -566,6 +575,24 @@ def plot_histo():
         plot = convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
 
+
+
+@app.route('/plot_line',methods=['GET','POST'])
+def plot_line():
+    l=[]
+    l1=[]
+    mlist=[]
+    query='SELECT latitude,longitude FROM Earthquake'
+    con = sql.connect("database.db")
+    cur = con.cursor()
+    cur.execute(query)
+    rows = cur.fetchall()
+    print(rows)
+    df=pd.DataFrame(rows)
+    fig=plt.figure()
+    plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
+    plot=convert_fig_to_html(fig)
+    return render_template("clus_o.html", data=plot.decode('utf8'))
 
 if __name__ == '__main__':
   app.run()
