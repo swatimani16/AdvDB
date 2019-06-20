@@ -2,5 +2,5 @@ Flask==0.12.1
 pandas
 redis
 matplotlib
-sklearn
+scikit-learn
 scipy

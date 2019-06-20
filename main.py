@@ -10,7 +10,6 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import math
 from math import sqrt
-import seaborn as sns
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
 
