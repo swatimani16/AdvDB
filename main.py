@@ -10,6 +10,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import math
 from math import sqrt
+import numpy as np
 app = Flask(__name__)
 r = redis.StrictRedis(host="swatiredis.redis.cache.windows.net", port=6380,password="4G67nLQxPEzXJBu0Gh1wcNgZcBbvAnLw4YqAGdb2aEQ=",ssl=True)
 
@@ -490,14 +491,19 @@ def cluster_plot():
         X = y.dropna()
         fig = plt.figure()
         centers = k.cluster_centers_
-        print(centers)
+        #print(centers)
+        d=[]
+        for i in range(len(centers)):
+            for j in range(len(centers)):
+                dist = np.linalg.norm(centers[i]-centers[j])
+                d.append(dist)
+        print(d)
+        #print(centers[0][0])
         l=k.labels_
         plt.scatter(X[0], X[1],c=l)
         plt.scatter(centers[:, 0], centers[:, 1], c='red', s=200,marker='*', alpha=0.5)
-
-        # print(X[:,0])
         plot = convert_fig_to_html(fig)
-        return render_template("clus_o.html", data=plot.decode('utf8'))
+        return render_template("clus_o.html", data=plot.decode('utf8'),distances=d)
 
 @app.route("/plot_bar",methods=['GET','POST'])
 def plot_bar():
