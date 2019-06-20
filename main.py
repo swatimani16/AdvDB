@@ -519,10 +519,10 @@ def plot_bar():
         y = pd.DataFrame(mlist)
         X=y.dropna()
         print(X[1])
-        color=['red','blue','skyblue','yellow','cyan','magenta','black','green','gold','salmon','olive']
+        color=['r','g','b','c','w','b']
         fig=plt.figure()
-        for i in range(len(X)):
-            plt.bar(X[0], X[1],label=X[0][i],color=color[i])
+        for i in range(len(X[0])):
+            plt.bar(X[0][i], X[1][i],color=color[i],label=X[0][i])
         for i,v in enumerate(X[1]):
             plt.text(i,v,str(v),color='blue',fontweight='bold',horizontalalignment='center')
         plt.legend()
