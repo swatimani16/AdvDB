@@ -481,7 +481,9 @@ def convert_fig_to_html(fig):
 def cluster_plot():
     if request.method=='POST':
         clus=int(request.form['c'])
-        query = "SELECT latitude,longitude FROM Earthquake "
+        d1=float(request.form['d1'])
+        d2=float(request.form['d2'])
+        query = "SELECT latitude,longitude FROM Earthquake where depth>"+str(d1)+" and depth<="+str(d2)+" "
         con = sql.connect("database.db")
         cur = con.cursor()
         cur.execute(query)
@@ -512,7 +514,6 @@ def plot_bar():
         d1 = int(request.form['d1'])
         d2 = int(request.form['d2'])
         for i in range(d1,d2,2):
-            l = []
             l1 = []
             query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
             con = sql.connect("database.db")
@@ -537,6 +538,66 @@ def plot_bar():
         plt.legend()
         plot = convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
+
+
+@app.route("/plot_bar1",methods=['GET','POST'])
+def plot_bar1():
+    mlist=[]
+    temp=[]
+    temp1=[]
+    l1=[]
+    l2=[]
+    if request.method=='POST':
+        d1 = (request.form['d1'])
+        d2 = (request.form['d2'])
+        query1="Select time from Earthquake"
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query1)
+        rows1 = cur.fetchall()
+        #print(rows1)
+        for i in range(len(rows1)):
+            val=rows1[i][0][0:10]
+            temp.append(val)
+        for i in range(0,len(temp)-1):
+            if temp[i]!=temp[i+1]:
+                temp1.append(temp[i])
+        #print(temp1[1])
+        for i in range(len(temp1)):
+            #print(i)
+            #print(temp1[i])
+            if ((str(temp1[i])<str(d2)) and (str(temp1[i])>str(d1))):
+                l2.append(str(d1))
+                l2.append(str(temp1[i]))
+                l2.append(str(d2))
+                t=str(d1)+"-"+str(temp1[i])
+                t1=str(temp1[i])+"--"+str(temp[i+1])
+                l1.append(t)
+                l1.append(t1)
+        #print(l1)
+        #print(l2)
+        '''for i in range(0,len(l2)-1):
+            query = "SELECT count(time) FROM Earthquake where SUBSTR(time,1,10) >"+str(l2[i])+" and SUBSTR(time,1,10)<="+str(l2[i+1])+""
+            con = sql.connect("database.db")
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchone()
+            l1.append(rows[0])
+            #print(l1)
+            mlist.append(l1)
+        print(mlist)
+        y = pd.DataFrame(mlist)
+        X=y.dropna()
+        print(X[1])
+        color=['r','g','b','c','w','b']
+        fig=plt.figure()
+        for i in range(len(X[0])):
+            plt.bar(X[0][i], X[1][i],color=color[i],label=X[0][i])
+        for i,v in enumerate(X[1]):
+            plt.text(i,v,str(v),color='blue',fontweight='bold',horizontalalignment='center')
+        plt.legend()
+        plot = convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))'''
 
 @app.route("/plot_pie",methods=['GET','POST'])
 def plot_pie():
