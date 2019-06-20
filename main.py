@@ -30,6 +30,11 @@ def clustering():
 def barplot():
     return render_template('barplot.html')
 
+
+@app.route('/plotline1')
+def plotline1():
+    return render_template('plotline1.html')
+
 #Clustering
 @app.route('/pieplot')
 def pieplot():
@@ -606,9 +611,7 @@ def plot_pie():
         d1 = int(request.form['d1'])
         d2 = int(request.form['d2'])
         for i in range(d1,d2,2):
-            l = []
             l1 = []
-            label=[]
             query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
             con = sql.connect("database.db")
             cur = con.cursor()
@@ -662,6 +665,29 @@ def plot_line():
     plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
     plot=convert_fig_to_html(fig)
     return render_template("clus_o.html", data=plot.decode('utf8'))
+
+@app.route('/plot_line1',methods=['GET','POST'])
+def plot_line1():
+    l=[]
+    l1=[]
+    mlist=[]
+    if request.method=='POST':
+        l1=request.form['l1']
+        l2=request.form['l2']
+        ln1=request.form['ln1']
+        ln2=request.form['ln2']
+        query='SELECT latitude,longitude FROM Earthquake where latitude between '+str(l1)+' and '+str(l2)+' and longitude between '+str(ln1)+' and '+str(ln2)+''
+        print(query)
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        print(rows)
+        df=pd.DataFrame(rows)
+        fig=plt.figure()
+        plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
+        plot=convert_fig_to_html(fig)
+        return render_template("clus_o.html", data=plot.decode('utf8'))
 
 if __name__ == '__main__':
   app.run()
