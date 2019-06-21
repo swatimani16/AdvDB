@@ -684,7 +684,7 @@ def plot_line1():
         print(rows)
         df=pd.DataFrame(rows)
         fig=plt.figure()
-        plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
+        plt.plot((df[0]//1000),(df[1]),marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
         plot=convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
 
