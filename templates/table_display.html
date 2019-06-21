@@ -5,10 +5,11 @@
     <title>Table display</title>
 </head>
 <body>
+<h1 style="color:blue">Swati Sriram Mani, 8136 </h1>
 <table border="1">
-   <!--{% for r in data%}
+ <!-- {% for r in data%}
     <tr>
-        <td>{{r["time"]}}</td>
+        <td>{{r["StateName"]}}</td>
         <td>{{r["latitude"]}}</td>
         <td>{{r["longitude"]}}</td>
         <td>{{r["depth"]}}</td>
@@ -33,17 +34,7 @@
 
     </tr>
     {%endfor%}-->
-    {% for r in data%}
-    {{r}}
-    {%endfor%}
-    <table border="1"><tr><td>{{data1}}</td></tr></table>
-
-</table>
-<table border="1">
-    <tr><td>{{rows}}</td></tr>
-</table>
-<table border="1">
-    <tr><td>Time Difference:{{stime}}</td></tr>
-</table>
+    <table border="1"><tr><td>States between 2 and 8 million{{data}}</td></tr></table>
+    <table border="1"><tr><td>States between 8 and 40 {{data1}}</td></tr></table>
 </body>
 </html>

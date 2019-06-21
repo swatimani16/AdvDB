@@ -610,9 +610,10 @@ def plot_pie():
     if request.method=='POST':
         d1 = int(request.form['d1'])
         d2 = int(request.form['d2'])
+        interval=int(request.form['intv'])
         for i in range(d1,d2,2):
             l1 = []
-            query = "SELECT count(*) FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
+            query = "SELECT TotalPop,Registered FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
             con = sql.connect("database.db")
             cur = con.cursor()
             cur.execute(query)
@@ -662,7 +663,7 @@ def plot_line():
     print(rows)
     df=pd.DataFrame(rows)
     fig=plt.figure()
-    plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
+    plt.plot(df[0],(df[1]),marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
     plot=convert_fig_to_html(fig)
     return render_template("clus_o.html", data=plot.decode('utf8'))
 
@@ -674,9 +675,7 @@ def plot_line1():
     if request.method=='POST':
         l1=request.form['l1']
         l2=request.form['l2']
-        ln1=request.form['ln1']
-        ln2=request.form['ln2']
-        query='SELECT latitude,longitude FROM Earthquake where latitude between '+str(l1)+' and '+str(l2)+' and longitude between '+str(ln1)+' and '+str(ln2)+''
+        query='SELECT TotalPop,Registered FROM Earthquake where TotalPop between '+str(l1)+' and '+str(l2)+''
         print(query)
         con = sql.connect("database.db")
         cur = con.cursor()
@@ -688,6 +687,32 @@ def plot_line1():
         plt.plot(df[0],df[1],marker='o',markerfacecolor='red',markersize=6,color='blue',linewidth=1,linestyle='dashed')
         plot=convert_fig_to_html(fig)
         return render_template("clus_o.html", data=plot.decode('utf8'))
+
+
+
+##############################################################################################################
+@app.route("/select_pop",methods=['GET','POST'])
+def select_pop():
+    if request.method=='POST':
+        v1=(request.form['d1'])
+        v2=(request.form['d2'])
+        v3=request.form['d3']
+        query = 'Select StateName,TotalPop from Earthquake where TotalPop between '+str(v1)+' and '+str(v2)+' '
+        print(query)
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        print(rows)
+
+        query1 = 'Select StateName,TotalPop from Earthquake where TotalPop between '+str(v2)+' and '+str(v3)+' '
+        print(query1)
+        con = sql.connect("database.db")
+        cur = con.cursor()
+        cur.execute(query1)
+        rows1 = cur.fetchall()
+        print(rows1)
+        return render_template("table_display.html",data=rows,data1=rows1)
 
 if __name__ == '__main__':
   app.run()
