@@ -607,18 +607,21 @@ def plot_bar1():
 @app.route("/plot_pie",methods=['GET','POST'])
 def plot_pie():
     mlist=[]
+
     if request.method=='POST':
         d1 = int(request.form['d1'])
         d2 = int(request.form['d2'])
         interval=int(request.form['intv'])
-        for i in range(d1,d2,2):
+        for i in range(d1,d2,interval):
             l1 = []
-            query = "SELECT TotalPop,Registered FROM Earthquake where depth >"+str(i)+" and depth<="+str(i+2)+""
+            l = []
+            query = "SELECT TotalPop FROM Earthquake where TotalPop >"+str(i)+" and TotalPop<="+str(i+interval)+""
+            print(query)
             con = sql.connect("database.db")
             cur = con.cursor()
             cur.execute(query)
             rows = cur.fetchone()
-            l=str(i)+"--"+str(i+2)
+            l=str(i)+"--"+str(i+interval)
             l1.append(l)
             print(l1)
             l1.append(rows[0])
