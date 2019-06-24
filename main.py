@@ -97,6 +97,18 @@ def delete_cache():
 def select_count():
     return render_template('select_count.html')
 
+@app.route('/formmm')
+def formmm():
+        return render_template('formmm.html')
+
+
+@app.route('/client_homePage',methods=['GET','POST'])
+def client_homepage():
+    if request.args.get('Quiz4_Q8') == "Quiz4_Q8":
+        num = request.args.get('num')
+        return render_template('client_homepage.html',result=num)
+
+
 #Display all the values of the database
 @app.route('/list')
 def list():
