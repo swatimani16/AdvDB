@@ -5,7 +5,7 @@
     <script type="text/javascript">
         google.charts.load('current', { 'packages': ['corechart'] });
         google.charts.setOnLoadCallback(drawChart);
-        colors = ['red', 'blue', 'gree', 'yellow']
+        colors = ['red', 'blue', 'green', 'yellow']
         function drawChart() {
             var list = [['num', 'cal']];
             var chartsData = {{ result }};
@@ -25,7 +25,7 @@
         };
 
         // var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-        var chart2 = new google.visualization.BarChart(document.getElementById('piechart2'));
+        //var chart2 = new google.visualization.BarChart(document.getElementById('piechart2'));
          var chart3 = new google.visualization.ScatterChart(document.getElementById('piechart2'));
         // var chart4 = new google.visualization.LineChart(document.getElementById('curvechart'));
 
