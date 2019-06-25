@@ -106,7 +106,7 @@ def formmm():
 def client_homepage():
     if request.args.get('Quiz4_Q8') == "Quiz4_Q8":
         num = request.args.get('num')
-        return render_template('client_homepage.html',result=num)
+        return render_template('client_page.html',result=num)
 
 
 #Display all the values of the database
